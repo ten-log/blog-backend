@@ -7,7 +7,7 @@ import bodyParser from 'koa-bodyparser';
 import mongoose from 'mongoose';
 
 import api from './api';
-
+import jwtMiddleware from './lib/jwtMiddleware';
 /*
 import createFakeData from './createFakeData';  db에 내용 insert 하는 용도로 잠시 사용
 const Koa = require('koa');
@@ -33,6 +33,8 @@ const router = new Router(); //라우터 설정
 router.use('/api', api.routes());// api 라우터적용
 
 app.use(bodyParser());
+app.use(jwtMiddleware);
+
 app.use(router.routes()).use(router.allowedMethods());
 
 const port = PORT || 4000;
