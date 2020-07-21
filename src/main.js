@@ -7,7 +7,9 @@ import bodyParser from 'koa-bodyparser';
 import mongoose from 'mongoose';
 
 import api from './api';
+
 /*
+import createFakeData from './createFakeData';  db에 내용 insert 하는 용도로 잠시 사용
 const Koa = require('koa');
 const Router = require ('koa-router');
 const bodyParser = require('koa-bodyparser');
@@ -25,10 +27,8 @@ mongoose
     console.error(e);
   });
 
-
 const app = new Koa();
 const router = new Router(); //라우터 설정
-
 
 router.use('/api', api.routes());// api 라우터적용
 

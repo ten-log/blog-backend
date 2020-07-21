@@ -1,4 +1,17 @@
 import Post from '../../models/post';
+import mongoose from 'mongoose';
+import Joi from '@hapi/joi';
+
+const {ObjectId} = mongoose.Types;  //몽고디비 타입 맞나 안맞나 확인용
+
+export const checkObjectId =(ctx,next)=>{
+  const {id} = ctx.params;
+  if(!ObjectId.isValid(id)){  // 여기서 이 함수가 id맞나 안맞나 판단함
+    ctx.status = 400;
+    return;
+  }
+  return next();
+};
 
 
 let postId = 1; // id의 초깃값입니다.
@@ -17,6 +30,21 @@ POST /api/posts
 { title, body }
 */
 export const write = async ctx => {
+
+  const schema = Joi.object().keys({
+    title:Joi.string().required(), //required 가있으면 필수항목
+    body:Joi.string().required(),
+    tags: Joi.array()
+    .items(Joi.string()).required()
+  })
+  const result =schema.validate(ctx.request.body);
+  if(result.error){
+    ctx.status = 400;
+    ctx.body= result.error;
+    return;
+  }
+
+
   // REST API의 request body는 ctx.request.body에서 조회할 수 있습니다.
   const { title, body , tags} = ctx.request.body;
   const post = new Post({
@@ -44,7 +72,7 @@ GET /api/posts
 */
 export const list = async ctx => {
   try{
-    const posts = await Post.find().exec();
+    const posts = await Post.find().sort({_id:-1}).limit(10).exec();
     ctx.body = posts;
   }catch(e){
     ctx.throw(500, e);
@@ -132,7 +160,22 @@ PATCH /api/posts/:id
 { title, body }
 */
 export const update = async ctx =>{
+
   const {id} = ctx.params;
+
+  const schema = Joi.object().keys({
+    title:Joi.string(),
+    body:Joi.string(),
+    tags: Joi.array()
+    .items(Joi.string())
+  })
+  const result =schema.validate(ctx.request.body);
+  if(result.error){
+    ctx.status = 400;
+    ctx.body= result.error;
+    return;
+  }
+
   try{
     const post = await Post.findByIdAndUpdate(id, ctx.request.body ,{new:true}
     ).exec();
