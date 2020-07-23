@@ -36,6 +36,7 @@ app.use(bodyParser());
 app.use(jwtMiddleware);
 
 app.use(router.routes()).use(router.allowedMethods());
+//Router from 'koa-router' 의 router에 모아놓은  라우터를 koa에 적용해주겠다.
 
 const port = PORT || 4000;
 app.listen(port, ()=>{

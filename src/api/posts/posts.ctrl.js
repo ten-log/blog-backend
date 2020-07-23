@@ -47,7 +47,7 @@ export const write = async ctx => {
   // REST API의 request body는 ctx.request.body에서 조회할 수 있습니다.
   const { title, body , tags} = ctx.request.body;
   const post = new Post({
-    title, body, tags
+    title, body, tags , user:ctx.state.user,
   });
   try {
     await post.save();
