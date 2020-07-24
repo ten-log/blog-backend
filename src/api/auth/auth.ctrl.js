@@ -99,7 +99,7 @@ export const login = async ctx => {
 */
 export const check = async ctx => {
   const { user } = ctx.state;
-  if (!user) {
+  if(!user){
     // 로그인중 아님
     ctx.status = 401; // Unauthorized
     return;

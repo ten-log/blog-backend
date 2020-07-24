@@ -4,13 +4,32 @@ import Joi from '@hapi/joi';
 
 const {ObjectId} = mongoose.Types;  //몽고디비 타입 맞나 안맞나 확인용
 
-export const checkObjectId =(ctx,next)=>{
-  const {id} = ctx.params;
-  if(!ObjectId.isValid(id)){  // 여기서 이 함수가 id맞나 안맞나 판단함
-    ctx.status = 400;
+export const checkOwnPost =(ctx, next)=>{
+  const {user, post} =ctx.state;
+  if(post.user._id.toString() !== user._id){
+    ctx.status = 403;
     return;
   }
   return next();
+}
+
+export const getPostById = async (ctx,next)=>{
+  const {id} = ctx.params;
+  if(!ObjectId.isValid(id)){  // 여기서 함수가 존재하는 id 인지맞나 안맞나 판단함
+    ctx.status = 400;
+    return;
+  }
+  try{
+    const post = await Post.findById(id);
+    if(!post){
+      ctx.status= 404;
+      return;
+    }
+    ctx.state.post = post;
+    return next();
+  }catch(e){
+    ctx.throw(500, e);
+  }
 };
 
 let postId = 1; // id의 초깃값입니다.
@@ -76,9 +95,18 @@ export const list = async ctx => {
     ctx.status = 400;
     return;
   }
+
+  const {tag , username}= ctx.query;
+
+  //tag , username 값이 유효하면 객체 안에 넣고 , 그렇지 않으면 넣지 않음
+  const query ={
+    ...(username ? {'user.username':username }:{} ),
+    ...(tag? {tags:tag} : {}),  //존재 여부 확인하기 위한 코드 책에서는 삼항연산
+  };
+
   try{
-    const posts = await Post.find().sort({_id:-1}).limit(10).skip((page-1)*10).exec();
-    const postCount = await Post.countDocuments().exec();
+    const posts = await Post.find(query).sort({_id:-1}).limit(10).skip((page-1)*10).exec();
+    const postCount = await Post.countDocuments(query).exec();
     ctx.set('Last-Page' , Math.ceil(postCount/10));
 
 
@@ -96,21 +124,9 @@ export const list = async ctx => {
 /* 특정 포스트 조회
 GET /api/posts/:id
 */
+
 export const read = async ctx => {
-  const { id } = ctx.params;
-  // 주어진 id 값으로 포스트를 찾습니다.
-  // 파라미터로 받아 온 값은 문자열 형식이니 파라미터를 숫자로 변환하거나,
-  // 비교할 p.id 값을 문자열로 변경해야 합니다.
-  try{
-    const post = await Post.findById(id).exec();
-    if(!post){
-      ctx.status=404;
-      return;
-    }
-    ctx.body= post;
-  }catch(e){
-    ctx.throw(500, e);
-  }
+  ctx.body = ctx.state.post;
 };
 
 /* 특정 포스트 제거
