@@ -31,7 +31,7 @@ UserSchema.methods.generateToken = function(){
   const token = jwt.sign(
   //첫번째 파라미터에는 토큰안에 집어넣고 싶은데이터를 넣습니다.
     {
-      _id:this.id,  // mongoose 에서는 id를 쓰면 _id의 값을 반환한다고 합니다. 
+      _id:this.id,  // mongoose 에서는 id를 쓰면 _id의 값을 반환한다고 합니다.
       username:this.username,
     },
     process.env.JWT_SECRET,
